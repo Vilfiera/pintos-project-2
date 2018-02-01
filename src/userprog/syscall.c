@@ -135,11 +135,20 @@ void exit (int status)
   if ( t->parent_wait)
    sema_up(&(t->parent->child_sema));
   file_close (t->exefile);
+  // frees list of children.
   struct list *templist = &(t -> childlist);
   while (!list_empty (templist)) {
       struct list_elem *cr_elem = list_pop_front (templist);
       struct child_record *tempCR = list_entry(cr_elem, struct child_record, elem);
       free(tempCR);
+  }
+  // frees list of file descriptors.
+  templist = &(t->fd_entries);
+  while (!list_empty(templist)) {
+    struct list_elem *fd_elem = list_pop_front(templist);
+    struct file_record *tempFR = list_entry(fd_elem, struct file_record, elem);
+    file_close(tempFR->cfile);
+    free(tempFR);
   }
   thread_exit ();
 }
